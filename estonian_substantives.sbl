@@ -9,14 +9,12 @@ routines (
 	case_ending
 	even_ending
 	plural_three_first_cases
-	remove_double_kpt
+	remove_double
 	double
 	undouble
 	i_plural
 	degrees
 	substantive
-	verb
-	nu
 )
 
 stringdef a" hex 'E4' //a-umlaut ä
@@ -54,31 +52,7 @@ backwardmode (
 	    )
 	    delete //ei saa kätte nom, gen v part-is sõnu nt 'tühjegi', muidu OK. (ˇkatki != kat, slprst käänded)
 	)
-/*
-Verbi tegevusnimed ('mas', 'maks', 'mata', 'mas', 'ma') on kaetud substantiivide all (võrded).
 
-*/
-	define verb as (
-	    setlimit tomark p1 for ([substring])
-            among(
-		'n' (V1) //kirjutan, aga ˇsaatan == saata, ˇdraakon == draako :( NIMETAV KÄÄNE LÄHEB PEKKI
-		//sg2 covered in substantive 
-		'b' (V1)
-		'me' (V1)
-		'te' (V1)
-		'vad' (V1)
-		'sin' //ˇapelsin -> apel :(, laulsin -> laul (sel juhul laulu ains. nim. võrdne lemma)
-		'in'
-		'takse' 'dakse' //lauldakse, lubatakse
-		'akse' //tullakse <- 'a' 
-		'da' 'ta' //'a' lubada
-		'des' 'tes' //'es' hakates
-		
-
-	    )
-	    delete
-	    set is_verb
-	)
 	define LONGV as 
 		among('aa' 'ee' 'ii' 'oo' 'uu' '{a"}{a"}' '{o"}{o"}' '{u"}{u"}' '{o'}{o'}')
 	//define CRV as (C RV)
@@ -134,15 +108,7 @@ Verbi tegevusnimed ('mas', 'maks', 'mata', 'mas', 'ma') on kaetud substantiivide
             next [hop 1] delete
 	)
 
-	define nu as (
-	    setlimit tomark p1 for ([substring])
-            among(
-		'nu'
-	    )
-	    delete
-	)
-
-	define remove_double_kpt as (// undouble consonant if 'C1C1V'
+	define remove_double as (// undouble consonant if 'C1C1V'
 	    (V1) (double)
 	    and undouble
 	    //goto non-V1 [C] -> x  x delete // undouble consonant if 'C1C1V', nt 'mõtte' -> 'mõte'
@@ -166,9 +132,8 @@ Verbi tegevusnimed ('mas', 'maks', 'mata', 'mas', 'ma') on kaetud substantiivide
 	    //do i_plural
 	    do plural_three_first_cases
 	    do degrees
+	    do remove_double
 	    do i_plural
-	    do nu
-	    do remove_double_kpt
 	)
 
 )
