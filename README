@@ -1,5 +1,15 @@
-This contains the source code for the snowball compiler and the stemming
-algorithms on the website.
-
 See http://snowballstem.org/ for more details.
 
+Here's Snowball for Estonian.
+
+In order to test it:
+
+put words you want to test into the file 'voc.txt' one word per line
+
+run ' ./testest.sh'
+
+Ignore the error messages :)
+
+the result appears in file 'TEMP-txt'
+
+This contains the source code for the snowball compiler and has been edited by Linda. The code original git version is here: https://github.com/snowballstem/snowball/tree/e103b5c257383ee94a96e7fc58cab3c567bf079b
