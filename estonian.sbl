@@ -1,4 +1,7 @@
-/* Estonian stemmer. 
+/* Estonian stemmer version 1.2
+
+Made by Linda Freienthal in January 2019.
+
 */
 
 routines (
@@ -26,11 +29,14 @@ stringdef u" hex 'FC' //u-umlaut ü
 externals ( stem )
 booleans ( is_verb )
 integers ( p1 )
-groupings ( V1 RV)
+groupings ( V1 RV KI GI alphabet)
 stringescapes {}
 
 define V1 'aeiou{o'}{a"}{o"}{u"}'
 define RV 'aeiuo'
+define alphabet 'bcdfghjklmnpqrstvwxšzž' + V1
+define KI 'kptgbdshfšzž'
+define GI alphabet - KI
 define mark_regions as (
 
     $p1 = limit
@@ -41,74 +47,39 @@ define mark_regions as (
 
 backwardmode (
 
-/*
-Miks peab kääne ees olema? EKSS 409 Sest: abivägi, arvamusblogi, mägi, pigi, regi, jõgi. + rongi (gen par), ring, analoog, astroloog, 
-EKSS 199 hoki, veski, baski, jänki, katki, krutski, kõmaki, läkiläki. + tüki, püüki, lööki, pinki.
-
-
-NB! õnnelik-tüüpi (ÕS 19. tüüp) kuulub umbes 1300 sõna.
-+ kannike, lapike, pildike, päike, väike, pisike. kassike(ne), musirullikene
-lapike, lapikese, lapike-st, lapikese-le, lapikes-te, lapikesi, lapikes-te-le
-*/
 	define emphasis as (
 	    setlimit tomark p1 for ([substring])
-            among(
-		'gi' (among('ikke' 'sse' 'ike' 'le' 'ni' 'na' 'ta' 'ga' 'de' 'te'))
-		'ki' (among('st' 'lt'))
+	    test hop 4 //kingi -> kingi
+            among( //not 'in'?
+		'gi' ((GI and not LONGV) delete) //jooksemegi -> jookseme, bioloogi -> bioloogi
+		'ki' ('är' <-'k' or KI delete) //kookki -> kook, masinavärki -> masinavärk	   
 	    )
-	    delete //ei saa kätte nom, gen v part-is sõnu nt 'tühjegi', muidu OK. (ˇkatki != kat, slprst käänded)
+	    
 	)
-/*
-Verbi tegevusnimed ('mas', 'maks', 'mata', 'mas', 'ma') on kaetud substantiivide all (võrded). Puudu: 'matu'
-'des' 'tes' //'es' hakates -> covered in substantive
 
-laulev -> omaette omadussõna juba, ei tee lühemaks.
-
-! lugegu, loetagu, lugegem jne
-
-NB! EI TÖÖTA, KUI EES ÜKS LAHTINE SILP.
-*/
 	define verb as (
 	    setlimit tomark p1 for ([substring])
-            among(
-		'ksin' 'ksid' 'ksime' 'ksite' //conditional  'ksid' == läheb mitmusega sassi? Pigem on ksid lõpuga ikka verbid according to statistics
-		'takse' 'dakse' //impersonal: laul-dakse, luba-takse
-		'taks' 'daks' //impersonal conditional: laul-daks, saade-taks
-		'akse' //impersonal: tull-akse <- 'a'`````````````` 
-		'sime' //pl1pst: saat-sime
-		'site' //pl2pst: saat-site
-		'vad' (V1) //pl3prs: laula-vad ja laulvad == laula/laul, aga laulvad võiks == laulva?
-		'sin' //sg1pst: laul-sin, saat-sin ˇapelsin -> apel :(, laulsin -> laul (sel juhul laulu ains. nim. võrdne lemma) v tõusma -> tõus jne 
-		'ime' //pl1pst: tul-ime, teg-ime
-		'ite' //pl2pst: teg-ite, jooks-ite ˇministrite, ˇredelite,
-		'vat' //prs reference -> luba-vat, laul-vat ++++davat, tavat and lauldava-t vrs laulda-vat :(
-		'me' (V1) //pl1prs: laula-me, tule-me
-		//sg2pst covered in substantive
-		'in' //sg1pst: tul-in
-		'is' //sg3pst: saat-is, laul-is     ˇjäätis - jäät, ˇprogrammis;; saatis - saat //s covered in substantive
-		//'tagu' 'dagu' //loetagu, lauldagu
-		'da' //da-infinitive: luba-da 'a'?????????? lubada , hakata -> ta is covered in substantive
-		'n' (V1) //sg1prs: kirjuta-n, aga ˇsaatan == saata, ˇdraakon == draako :( NIMETAV KÄÄNE LÄHEB PEKKI, aga see on igal juhul värd veits.
-		//sg2prs is covered covered in substantive 
-		'b' (V1) //sg3prs: laula-b
-
-//kümme, võime, tõmme, ilme, pehme, seeme,
-//võime, võime, võime-t, võime-le, võime-d, võime-te, võime-id, võime-te-le
-//seeme, seemne, seeme-t, seemne-le, seemne-d, seemne-te, seemne-id, seemne-te-le
-//ase, aseme, ase-t, aseme-le, aseme-d, aseme-id, aseme-te-sse
-//pääse, pääsme, pääse-t, pääsme-le, pääsme-d, pääsme-te, pääsme-id, pääsme-te-le
-//84773 me, 23388+9869 sime, 4356 ksime, 154 neg me, 18 nuksime
-//1965851+1010400+465668+328529+62418+23013+21133+8516 jne sg g. 
-//ge - 18150+8960
-//gem - 664 +192 
-//gu - 5653+192+930
-//tagu - 50+179
+            among( //nuksime, nuksin
+		'nuksin' 'nuksime' 'nuksid' 'nuksite' (delete)
+		'ksin' 'ksid' 'ksime' 'ksite' (delete) //conditional  'ksid'
+		'mata' (delete)
+		'takse' 'dakse' (delete) //impersonal: laul-dakse, luba-takse 
+		'taks' 'daks' (delete) 	//impersonal conditional: laul-daks, saade-taks
+		'akse' (<-'a') 		//impersonal: tulla-kse, süüa-kse, teha-kse, püüt-akse, leita-kse
+		'sime' (delete) 	//pl1pst: saat-sime
+		'site' (delete) 	//pl2pst: saat-site
+		'sin' (delete) 		//sg1pst: laul-sin, saat-sin
+		'me' (V1 delete) 	//pl1prs: laula-me, tule-me
+		'da' (V1 delete) 	//da-infinitive: luba-da
+		'n' (V1 delete) 	//sg1prs: kirjuta-n
+		'b' (V1 delete) 	//sg3prs: laula-b
 	    )
-	    delete
 	    set is_verb
 	)
+
 	define LONGV as 
 		among('aa' 'ee' 'ii' 'oo' 'uu' '{a"}{a"}' '{o"}{o"}' '{u"}{u"}' '{o'}{o'}')
+
 	define i_plural as (
 	    setlimit tomark p1 for ([substring])
 	    among(
@@ -121,28 +92,20 @@ NB! EI TÖÖTA, KUI EES ÜKS LAHTINE SILP.
 	    setlimit tomark p1 for ([substring])
             among(
 		'sse' (RV) //illative: saapa-sse
-		'st' (RV) //elative: saapa-st kanali-st/kanali-le vrs roheli-st/rohelise-le
-//lapike, lapikese, lapike-st, lapikese-le, lapikes-te, lapikesi, lapikes-te-le
-//roheline, rohelise, roheli-st, rohelise-le, rohelis-te, rohelisi, rohelis-te-le
+		'st' (RV) //elative: saapa-st
 		'le' (RV) //allative: raamatu-le
 		'lt' (RV) //ablative: raamatu-lt
-		'na' (RV) //essive: õpetaja-na
-		// ???????'ta' //abessiiv and da-infinitive, raamatu-ta and tõus-ta
 		'ga' (RV) //komitatiive: õpetaja-ga
 		'ks' (RV) //translative: õpetaja-ks
+		'ta' (RV) //abessive and da-infinitive: õpetaja-ta and hüpa-ta
 		't' //partitiiv, raamatu-t and kapsas-t
-		's'  (RV)//inessive: raamatu-s and kapsa-s //AGA KA MINEVIK? LAULIS??
-//jura ˇkursus, aga mõjutab vaid nimetavad, mis on nvn kehvake.
-//kursu-s, kursuse, kursu-st, kursuse-le, kursuse-id, kursus-te-le
+		's'  (RV)//inessive and sg3pst: raamatu-s and sõiti-s
 		'l'  (RV) //adessive: raamatu-l and kapsa-l.
-//jura ˇahel, ˇaadel ˇministritool, aga mõjutab vaid nimetavad, mis on nvn kehvake
-//ahe-l, ahela, ahela-t, ahela-le, ahela-i-d, ahela-te-le, ahela-d
-//aade-l, aadli, aadli-t, aadli-le, aadli-d, aadli-te-le, aadle-id
+
 
 /*
 Terminative ending 'ni' is left out as it would worsen the results: there's more 'ni' ending words
-in sg g than in ter. 
-
+in sg g than in ter. Same with essive 'na'.
 
 */
 	    )
@@ -153,13 +116,13 @@ in sg g than in ter.
 	define plural_three_first_cases as ( 
 	    setlimit tomark p1 for ([substring])
             among(
-		'ikkude' (<-'ik') //plural genitive: õnnelikkude -> õnnelik
-		'ikke' (<-'ik') //plural partitive: rahulikke -> rahulik
-		'ike' (<-'ik') //plural genitive: ohtlike -> ohtlik
-		'sid' (not LONGV delete) //plural partitive: auto-sid; exludes plural nominative with words like gaasid, roosid.
-		'te' ((test hop 4 delete) or <-'t') //plural genitive and pl2: ministri-te, olulis-te, õun-te and saada-te, laula-te; also torte -> tort (if not in compound word)
-		'de' (delete) //plural genitive: lauda-de
-		'd' (RV delete) //plural nominative: voodid -> voodi, rattaid -> rattai, lapsikuid -> lapsiku,  ˇmagistrikraad
+		'ikkude' (<-'iku') //plural genitive: õnnelikkude -> õnneliku
+		'ikke' (<-'iku') //plural partitive: rahulikke -> rahuliku
+		'ike' (<-'iku') //plural genitive: ohtlike -> ohtliku
+		'sid' (not LONGV delete) //plural partitive and sg2pst and pl3pst: auto-sid and laul-sid (exludes plural nominative with words like gaasid, roosid)
+		'te' ((test hop 4 (not 't' delete)) or (not 't' <-'t')) //plural genitive and pl2: ministri-te, olulis-te, õun-te and saada-te, laula-te; also torte -> tort (if not in compound word) and kokkuvõtte -> kokkuvõte
+		'de' (RV delete) //plural genitive: lauda-de
+		'd' (RV delete) //plural nominative: voodid -> voodi, rattaid -> rattai, lapsikuid -> lapsiku
 	    )	    	
 	)
 
@@ -175,13 +138,14 @@ in sg g than in ter.
 	    setlimit tomark p1 for ([substring])
             among(
 		'nu' //haka-nu(-te-ga)
-		'tu' //luba-tu(-d) lubatud, lauldud, tuldud. Siis peaks du ka olema
+		'tu' //luba-tu(-d)
 		'du' //laul-du(-te-st)
+		'va' //laul-va(-te-le)
 	    )
 	    delete
 	)
 
-	define remove_double_kpt as (// undouble consonant if 'C1C1V': mõtte(-le) -> mõte, hakka(-n) -> haka, haka(-nu-d) -> haka 
+	define remove_double_kpt as (// undouble kpt consonant if 'C1C1V': mõtte(-le) -> mõte, hakka(-n) -> haka, haka(-nu-d) -> haka 
 	    (V1) (double)
 	    and undouble
 	)
@@ -190,15 +154,13 @@ in sg g than in ter.
 	    setlimit tomark p1 for ([substring])
             among(
 		'mai' (RV) //heleda-mai(-le)
-		'ma' //tugeva-ma(-le) JA sõit-ma, aga eludraa-ma, rukkika-ma
-//kui tahaks ainult substantiive ära, siis pane (RV)
-		//+ lihtsalt m lõpust ära ka?? heleda-m, tugeva-m (pole vb nii levinud?), aga 'kam-m','bussijaa-m', 'kasu-m'.
+		'ma' //tugeva-ma(-le) and ma-infinitive: sõit-ma
+		'm' (RV) //kauge-i-m, rõõmsa-m
 	    )
 	    delete
 	)
 
 	define substantive as (
-	    do emphasis
 	    do case_ending
 	    do plural_three_first_cases
 	    do degrees
@@ -208,60 +170,77 @@ in sg g than in ter.
 )
 
 
-
-//{'täima', '+lööma', 'naima', '+käima', '-muuma', '+müüma', 'kaema', 'näima', '+jooma', '+jääma', '+looma', 'pooma', '-määma', '+sööma', '+saama', '+viima', '+võima', '+tooma', '+keema'}
-
-
 define verb_exceptions as (
 	 [substring] atlimit
-	among(
+	among(//nuksin taks, nud, vat, tud, va
 		'joon' 'jood' 'joob' 'joote' 'joome' 'joovad' (<-'joo')
+		//'jooksin' 'jooksid' 'jooks' 'jooksite' 'jooksime' (<-'joo') kattub jooksmise minevikuga phmst
 		'j{o'}in' 'j{o'}id' 'j{o'}i' 'j{o'}ime' 'j{o'}ite'  (<-'joo')
-		'juuakse' 'joodakse' 'juua' 'jooma' (<- 'joo')
+		'juuakse' 'joodakse' 'juua' 'jooma' 'joomata' (<- 'joo')
 		'saan' 'saad' 'saab' 'saate' 'saame' 'saavad' (<-'saa')
+		'saaksin' 'saaksid' 'saaks' 'saaksite' 'saaksime' (<-'saa')
 		'sain' 'said' 'sai' 'saite' 'saime' (<-'saa')
-		'saadakse' 'saadi' 'saama' 'saada' (<-'saa')
-		'viin' 'viid' 'viib' 'viite' 'viime' 'viivad' (<-'vii') //homonüümia: see viin, seda/neid viite.
-		//'viisin' 'viisite' 'viisime' //saab järgmisest sammust kätte
-		'viiakse' 'viidi' 'viima' 'viia' (<-'vii')
-		'keen' 'keeb' 'keed' 'keeme' 'keete' 'keevad' (<-'kee') //VÕIKS AINT NEED JÄTTA ,mida kasutatakse ka?
-		//'keesin 'keesid' 'kees' 'keesime' 'keesite' 'keesid'
-		'keema' 'keeta' 'keedakse' (<-'kee')
+		'saadakse' 'saadi' 'saama' 'saada' 'saamata' (<-'saa')
+		'viin' 'viid' 'viib' 'viite' 'viime' 'viivad' (<-'viima')
+		'viiksin' 'viiksid' 'viiks' 'viiksite' 'viiksime' (<-'viima')
+		'viisin' 'viisite' 'viisime' (<-'viima')
+		'viiakse' 'viidi' 'viima' 'viia' 'viimata'(<-'viima')
+		'keen' 'keeb' 'keed' 'kees' 'keeme' 'keete' 'keevad' (<-'keesi')
+		'keeksin' 'keeks' 'keeksid' 'keeksime' 'keeksite' (<-'keesi')
+		'keema' 'keeta' 'keedakse' 'keemata' (<-'keesi')
 		'l{o"}{o"}n' 'l{o"}{o"}d' 'l{o"}{o"}b' 'l{o"}{o"}me' 'l{o"}{o"}te' 'l{o"}{o"}vad'  (<-'l{o"}{o"}')
-		// SEE ON IDENTNE LOOMA VÕI LÖÖMA MINEVIK: !!! 'l{o'}in' 'l{o'}id' 'l{o'}i' 'l{o'}ime' 'l{o'}ite' (<-'l{o"}{o"}')
-		'l{u"}{u"}akse' 'l{o"}{o"}dakse' 'l{o"}{o"}di' 'l{o"}{o"}ma' 'l{u"}{u"}a' (<-'l{o"}{o"}')
-		'k{a"}in' 'k{a"}ib' 'k{a"}id' 'k{a"}ime' 'k{a"}ite' 'k{a"}ivad' (<-'k{a"}i')
-		'k{a"}isin' 'k{a"}isid' 'k{a"}is' 'k{a"}isime' 'k{a"}isite' (<-'k{a"}i') //käis on ka 'varrukas', aga seda vast on vähem
-		'k{a"}iakse' 'k{a"}idi' 'k{a"}ia' 'k{a"}ima' (<-'k{a"}i')
+		'l{o"}{o"}ksin' 'l{o"}{o"}ksid' 'l{o"}{o"}ks' 'l{o"}{o"}ksime' 'l{o"}{o"}ksite' (<-'l{o"}{o"}')
+		'l{u"}{u"}akse' 'l{o"}{o"}dakse' 'l{o"}{o"}di' 'l{o"}{o"}ma' 'l{u"}{u"}a' 'l{o"}{o"}mata'  (<-'l{o"}{o"}')
+		'l{o'}in' 'l{o'}id' 'l{o'}i' 'l{o'}ime' 'l{o'}ite' (<-'l{o"}i') //looma-lõi, lööma-lõi
+		'loon' 'lood' 'loob' 'loome' 'loote' 'loovad' (<-'loo')
+		'looksin' 'looksid' 'looks' 'looksime' 'looksite' (<-'loo')
+		'luuakse' 'loodi' 'luua' 'looma' 'loomata'(<-'loo')
+		'k{a"}in' 'k{a"}ib' 'k{a"}id' 'k{a"}is'  'k{a"}ime' 'k{a"}ite' 'k{a"}ivad' (<-'k{a"}isi')
+		'k{a"}iksin' 'k{a"}iks' 'k{a"}iksid' 'k{a"}iksime' 'k{a"}iksite' (<-'k{a"}isi')
+		'k{a"}iakse' 'k{a"}idi' 'k{a"}ia' 'k{a"}ima' 'k{a"}imata' (<-'k{a"}isi')
 		's{o"}{o"}n' 's{o"}{o"}b' 's{o"}{o"}d' 's{o"}{o"}me' 's{o"}{o"}te' 's{o"}{o"}vad' (<-'s{o"}{o"}')
-		's{o'}in' 's{o'}i' 's{o'}id' 's{o'}ime' 's{o'}ite' (<-'s{o"}{o"}') //seda sõime
-		's{u"}{u"}akse' 's{o"}{o"}dakse' 's{o"}{o"}di' 's{o"}{o"}ma' 's{u"}{u"}a' (<-'s{o"}{o"}') //selle söödi
-		'toon' 'tood' 'toob' 'toote' 'toome' 'toovad' (<-'too') //see toon, selle toote
+		's{o"}{o"}ksin' 's{o"}{o"}ks' 's{o"}{o"}ksid' 's{o"}{o"}ksime' 's{o"}{o"}ksite' (<-'s{o"}{o"}')
+		's{o'}in' 's{o'}i' 's{o'}id' 's{o'}ime' 's{o'}ite' (<-'s{o"}{o"}')
+		's{u"}{u"}akse' 's{o"}{o"}dakse' 's{o"}{o"}di' 's{o"}{o"}ma' 's{o"}{o"}mata' 's{u"}{u"}a' (<-'s{o"}{o"}') 
+		'toon' 'tood' 'toob' 'toote' 'toome' 'toovad' (<-'too') 
+		'tooksin' 'tooksid' 'tooks' 'tooksite' 'tooksime' (<-'too') 
 		't{o'}in' 't{o'}id' 't{o'}i' 't{o'}ime' 't{o'}ite' (<-'too')
-		'tuuakse' 'toodi' 'tooma' 'tuua' (<-'too')
-		'v{o'}in' 'v{o'}id' 'v{o'}ib' 'v{o'}ime' 'v{o'}ite' 'v{o'}ivad' (<-'v{o'}ima') // ˇsee või...
-		'v{o'}isin' 'v{o'}isid' 'v{o'}is' 'v{o'}isime' 'v{o'}isite' (<-'v{o'}ima')
-		'v{o'}idakse' 'v{o'}idi' 'v{o'}ida' 'v{o'}ima' (<-'v{o'}ima')
+		'tuuakse' 'toodi' 'tooma' 'tuua' 'toomata' (<-'too')
+		'v{o'}in' 'v{o'}id' 'v{o'}ib' 'v{o'}ime' 'v{o'}is' 'v{o'}ite' 'v{o'}ivad' (<-'v{o'}isi')
+		'v{o'}iksin' 'v{o'}iksid' 'v{o'}iks' 'v{o'}iksime' 'v{o'}iksite' (<-'v{o'}isi')
+		'v{o'}idakse' 'v{o'}idi' 'v{o'}ida' 'v{o'}ima' 'v{o'}imata'(<-'v{o'}isi')
 		'j{a"}{a"}n' 'j{a"}{a"}d' 'j{a"}{a"}b' 'j{a"}{a"}me' 'j{a"}{a"}te' 'j{a"}{a"}vad' (<-'j{a"}{a"}ma')
-		'j{a"}in' 'j{a"}id' 'j{a"}i' 'j{a"}ime' 'j{a"}ite' (<-'j{a"}{a"}ma')
-		'j{a"}{a"}dakse' 'j{a"}{a"}da' 'j{a"}{a"}ma' 'j{a"}{a"}di' (<-'j{a"}{a"}ma') //et ei oleks ˇjää
-		'loon' 'lood' 'loob' 'loome' 'loote' 'loovad' (<-'loo') //selle loote
-		'luuakse' 'loodi' luua' (<-'loo')//selle looma vrs hakkab looma ,.....???ADADAROAJAKJAS
-		'm{u"}{u"}n' 'm{u"}{u"}d' 'm{u"}{u"}b' 'm{u"}{u"}me' 'm{u"}{u"}te' 'm{u"}{u"}vad' (<-'m{u"}{u"}')//neid müüte
-		'm{u"}{u"}sin' 'm{u"}{u"}sid' 'm{u"}{u"}s' 'm{u"}{u"}sime' 'm{u"}{u"}site' (<-'m{u"}{u"}')
-		'm{u"}{u"}akse' 'm{u"}{u"}di' 'm{u"}{u"}a' 'm{u"}{u"}ma' (<-'m{u"}{u"}')
-		't{a"}ima' 't{a"}
-
-
+		'j{a"}{a"}ksin' 'j{a"}{a"}ksid' 'j{a"}{a"}ks' 'j{a"}{a"}ksime' 'j{a"}{a"}ksite' (<-'j{a"}{a"}ma')
+		'j{a"}ime' 'j{a"}ite' 'j{a"}in' 'j{a"}id' 'j{a"}i' (<-'j{a"}{a"}ma')
+		'j{a"}{a"}dakse' 'j{a"}{a"}da' 'j{a"}{a"}ma' 'j{a"}{a"}mata' 'j{a"}{a"}di' (<-'j{a"}{a"}ma')
+		'm{u"}{u"}n' 'm{u"}{u"}d' 'm{u"}{u"}b' 'm{u"}{u"}s' 'm{u"}{u"}me' 'm{u"}{u"}te' 'm{u"}{u"}vad' (<-'m{u"}{u"}si')
+		'm{u"}{u"}ksin' 'm{u"}{u"}ksid' 'm{u"}{u"}ks' 'm{u"}{u"}ksime' 'm{u"}{u"}ksite' (<-'m{u"}{u"}si')
+		'm{u"}{u"}akse' 'm{u"}{u"}di' 'm{u"}{u"}a' 'm{u"}{u"}ma' 'm{u"}{u"}mata' (<-'m{u"}{u"}si')
+		'loeb' 'loen' 'loed' 'loeme' 'loete' 'loevad' (<- 'luge')
+		'loeks' 'loeksin' 'loeksid' 'loeksime' 'loeksite' (<- 'luge')
+		'p{o'}en' 'p{o'}eb' 'p{o'}ed' 'p{o'}eme' 'p{o'}ete' 'p{o'}evad' (<- 'p{o'}de')
+		'p{o'}eksin' 'p{o'}eks' 'p{o'}eksid' 'p{o'}eksime' 'p{o'}eksite' (<- 'p{o'}de')
+		'laon' 'laob' 'laod' 'laome' 'laote' 'laovad' (<- 'ladu')
+		'laoksin' 'laoks' 'laoksid' 'laoksime' 'laoksite' (<- 'ladu')
+		'teeksin' 'teeks' 'teeksid' 'teeksime' 'teeksite' (<- 'tegema') //(<- 'tegi')
+		'teen' 'teeb' 'teed' 'teeme' 'teete' 'teevad' (<- 'tegema')
+		'tegin' 'tegi' 'tegid' 'tegime' 'tegite' (<-'tegema')
+		'tehakse' 'tehti' 'tegema' 'tegemata' 'teha' (<-'tegema')
+		'n{a"}en' 'n{a"}eb' 'n{a"}ed' 'n{a"}eme' 'n{a"}ete' 'n{a"}evad' (<-'n{a"}gi')
+		'n{a"}eksin' 'n{a"}eks' 'n{a"}eksid' 'n{a"}eksime' 'n{a"}eksite' (<-'n{a"}gi')
+		//'n{a"}gin' 'n{a"}gid' 'n{a"}gi' 'n{a"}gime' 'n{a"}gite' 
+		'n{a"}hakse' 'n{a"}hti' 'n{a"}ha' 'n{a"}gema' 'n{a"}gemata' (<-'n{a"}gi')
+//lugema-tüüpi (ÕS 57. tüüp) kuulub ligi 20 /2 I V/-sõna, mille esimese ja teise silbi piiril on lühike klusiil, nagu püga/ma, sada/ma, põde/ma, ladu/ma, kudu/ma. Nee
 	)
 )
 
 
 define stem as (
 	do mark_regions
-	verb_exceptions or
+	not verb_exceptions
 	unset is_verb
 	backwards (
+	    do emphasis
 	    do verb
 	    try (not is_verb do substantive)
 	    do remove_double_kpt
