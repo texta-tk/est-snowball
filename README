@@ -1,14 +1,12 @@
 See http://snowballstem.org/ for more details.
 
-Here's Snowball for Estonian version 1.0.
+Here's Snowball for Estonian version 1.2.
 
 In order to test it:
 
 put words you want to test into the file 'voc.txt' one word per line
 
 run ' ./testest.sh'
-
-Ignore the error messages :)
 
 the result appears in file 'TEMP-txt'
 
