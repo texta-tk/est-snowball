@@ -51,7 +51,7 @@ backwardmode (
 	    test hop 4 //kingi -> kingi
             among(
 		'gi' ((GI and not LONGV) delete) //jooksemegi -> jookseme, bioloogi -> bioloogi
-		'ki' ('är' <-'k' or KI delete) //kookki -> kook, masinavärki -> masinavärk	   
+		'ki' (('är' <-'k') or (KI delete)) //kookki -> kook, masinavärki -> masinavärk	   
 	    )
 	    
 	)
@@ -229,7 +229,7 @@ define verb_exceptions as (
 		'n{a"}eksin' 'n{a"}eks' 'n{a"}eksid' 'n{a"}eksime' 'n{a"}eksite' (<-'n{a"}gi')
 		//'n{a"}gin' 'n{a"}gid' 'n{a"}gi' 'n{a"}gime' 'n{a"}gite' 
 		'n{a"}hakse' 'n{a"}hti' 'n{a"}ha' 'n{a"}gema' 'n{a"}gemata' (<-'n{a"}gi')
-//lugema-tüüpi (ÕS 57. tüüp) kuulub ligi 20 /2 I V/-sõna, mille esimese ja teise silbi piiril on lühike klusiil, nagu püga/ma, sada/ma, põde/ma, ladu/ma, kudu/ma.
+//lugema-tüüpi (ÕS 57. tüüp) kuulub ligi 20 /2 I V/-sõna, mille esimese ja teise silbi piiril on lühike klusiil, nagu püga/ma, sada/ma, põde/ma, ladu/ma, kudu/ma. Nee
 	)
 )
 
