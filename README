@@ -1,6 +1,4 @@
-See http://snowballstem.org/ for more details.
-
-Here's Snowball for Estonian version 1.2.
+Here's Snowball for Estonian version 1.3.
 
 In order to test it:
 
@@ -8,8 +6,12 @@ put words you want to test into the file 'voc.txt' one word per line
 
 run ' ./testest.sh'
 
-the result appears in file 'TEMP-txt'
+the result will appear in file 'TEMP-txt'.
 
-This contains the source code for the snowball compiler and has been edited by Linda. 
+This repository contains the source code for the snowball compiler and has been edited for Estonian language by Linda Freienthal from Estonian text analytics enterprise Texta. The code's original git version is here: https://github.com/snowballstem/snowball/tree/e103b5c257383ee94a96e7fc58cab3c567bf079b.
 
-The code original git version is here: https://github.com/snowballstem/snowball/tree/e103b5c257383ee94a96e7fc58cab3c567bf079b
+In file 'Estonian Snowball 1.3.odt' you'll find the algorithm written out. 
+
+In file 'SB1.3_results.odt' you can browse some good and poor examples of the results of this algorithm. 
+
+See http://snowballstem.org/ for more details.
